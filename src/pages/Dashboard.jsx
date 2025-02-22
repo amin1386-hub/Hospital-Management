@@ -23,7 +23,7 @@ import {
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import {styled} from '@mui/material/styles';
 import {useAuth} from '../context/AuthContext';
-import api from '../services/api';
+import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
 
 const StyledContainer = styled(Container)(({theme}) => ({
@@ -140,10 +140,54 @@ const LogoutButton = styled(Button)(({theme}) => ({
     },
 }));
 
+// Fallback data
+const fallbackData = {
+    groups: {
+        group0: {color: "#F28B82"},
+        group1: {color: "#FBBC05"},
+        group2: {color: "#34A853"},
+        group3: {color: "#4285F4"},
+        group4: {color: "#A142F4"},
+        group5: {color: "#F4B400"},
+        group6: {color: "#FF6D01"},
+        group7: {color: "#46BD77"},
+        group8: {color: "#B39DDB"}
+    },
+    days: [
+        {
+            day: "۱",
+            emergency: "منصوری",
+            ccu: "محمدی",
+            hematology: "رضایی",
+            general: "عسکری پور",
+            gastro: "عباسی",
+            nephrology: "حسینی",
+            endocrine: "علوی",
+            pulmonary: "نوری"
+        }
+    ],
+    doctors: [
+        {
+            name: "منصوری",
+            department: "داخلی",
+            emergency_count: 3,
+            holiday_count: 4,
+            emergency_holiday: 0,
+            ccu_count: 0,
+            hematology_count: 1,
+            general_count: 2,
+            gastro_count: 1,
+            nephrology_count: 1,
+            endocrine_count: 1,
+            pulmonary_count: 1,
+        }
+    ]
+};
+
 const Dashboard = () => {
     const {user, logout} = useAuth();
-    const [schedule, setSchedule] = useState([]);
-    const [report, setReport] = useState([]);
+    const [days, setDays] = useState([]);
+    const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -157,23 +201,24 @@ const Dashboard = () => {
     };
 
     useEffect(() => {
-        fetchDashboardData();
+        const fetchData = async () => {
+            try {
+                const [daysRes, doctorsRes] = await Promise.all([
+                    axios.get('https://hospital.liara.run/api/days'),
+                    axios.get('https://hospital.liara.run/api/doctors')
+                ]);
+                setDays(daysRes.data || fallbackData.days);
+                setDoctors(doctorsRes.data || fallbackData.doctors);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                setDays(fallbackData.days);
+                setDoctors(fallbackData.doctors);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
     }, []);
-
-    const fetchDashboardData = async () => {
-        try {
-            const [scheduleResponse, reportResponse] = await Promise.all([
-                api.get('/api/schedule'),
-                api.get('/api/report')
-            ]);
-            setSchedule(scheduleResponse.data.schedule.days);
-            setReport(reportResponse.data.report.doctors);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     if (loading) {
         return (
@@ -226,25 +271,22 @@ const Dashboard = () => {
                                 <TableCell>جنرال</TableCell>
                                 <TableCell>گوارش</TableCell>
                                 <TableCell>نفرولوژی</TableCell>
+                                <TableCell>غدد/روماتولوژی</TableCell>
+                                <TableCell>ریه</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {schedule.map((day, index) => (
+                            {days.map((day, index) => (
                                 <TableRow key={index}>
-                                    <TableCell>{day.date}</TableCell>
-                                    {day.shifts.map((shift, idx) => (
-                                        <TableCell
-                                            key={idx}
-                                            sx={{
-                                                backgroundColor: `${shift.group.color}15`,
-                                                color: shift.group.color,
-                                                fontWeight: 500,
-                                                borderRadius: '8px'
-                                            }}
-                                        >
-                                            {shift.name}
-                                        </TableCell>
-                                    ))}
+                                    <TableCell>{day.day}</TableCell>
+                                    <TableCell>{day.emergency}</TableCell>
+                                    <TableCell>{day.ccu}</TableCell>
+                                    <TableCell>{day.hematology}</TableCell>
+                                    <TableCell>{day.general}</TableCell>
+                                    <TableCell>{day.gastro}</TableCell>
+                                    <TableCell>{day.nephrology}</TableCell>
+                                    <TableCell>{day.endocrine}</TableCell>
+                                    <TableCell>{day.pulmonary}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -261,22 +303,50 @@ const Dashboard = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell>نام پزشک</TableCell>
-                                <TableCell>گروه</TableCell>
-                                <TableCell>تعداد اورژانس</TableCell>
-                                <TableCell>تعداد تعطیلات</TableCell>
-                                <TableCell>تعداد شیفت کل</TableCell>
+                                <TableCell>بخش</TableCell>
+                                <TableCell>اورژانس</TableCell>
+                                <TableCell>تعطیلات</TableCell>
+                                <TableCell>اورژانس تعطیل</TableCell>
+                                <TableCell>CCU</TableCell>
+                                <TableCell>هماتولوژی</TableCell>
+                                <TableCell>جنرال</TableCell>
+                                <TableCell>گوارش</TableCell>
+                                <TableCell>نفرولوژی</TableCell>
+                                <TableCell>غدد/روماتولوژی</TableCell>
+                                <TableCell>ریه</TableCell>
+                                <TableCell>کل شیفت‌ها</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {report.map((doctor, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{doctor.name}</TableCell>
-                                    <TableCell>{doctor.group}</TableCell>
-                                    <TableCell>{doctor.stats.emergency.value}</TableCell>
-                                    <TableCell>{doctor.stats.holiday.value}</TableCell>
-                                    <TableCell>{doctor.stats.total.value}</TableCell>
-                                </TableRow>
-                            ))}
+                            {doctors.map((doctor, index) => {
+                                const totalShifts =
+                                    doctor.emergency_count +
+                                    doctor.ccu_count +
+                                    doctor.hematology_count +
+                                    doctor.general_count +
+                                    doctor.gastro_count +
+                                    doctor.nephrology_count +
+                                    doctor.endocrine_count +
+                                    doctor.pulmonary_count;
+
+                                return (
+                                    <TableRow key={index}>
+                                        <TableCell>{doctor.name}</TableCell>
+                                        <TableCell>{doctor.department}</TableCell>
+                                        <TableCell>{doctor.emergency_count}</TableCell>
+                                        <TableCell>{doctor.holiday_count}</TableCell>
+                                        <TableCell>{doctor.emergency_holiday}</TableCell>
+                                        <TableCell>{doctor.ccu_count}</TableCell>
+                                        <TableCell>{doctor.hematology_count}</TableCell>
+                                        <TableCell>{doctor.general_count}</TableCell>
+                                        <TableCell>{doctor.gastro_count}</TableCell>
+                                        <TableCell>{doctor.nephrology_count}</TableCell>
+                                        <TableCell>{doctor.endocrine_count}</TableCell>
+                                        <TableCell>{doctor.pulmonary_count}</TableCell>
+                                        <TableCell>{totalShifts}</TableCell>
+                                    </TableRow>
+                                );
+                            })}
                         </TableBody>
                     </Table>
                 </StyledTableContainer>

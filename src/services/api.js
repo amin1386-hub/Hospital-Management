@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'https://relaxed-hawking-71-rbhqh.liara.run/api'
+  baseURL: process.env.REACT_APP_API_URL || 'https://hospital.liara.run/api'
 });
 
 api.interceptors.request.use((config) => {

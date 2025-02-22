@@ -33,9 +33,9 @@ export const AuthProvider = ({ children }) => {
         throw new Error('این شماره تلفن قبلاً ثبت شده است');
       }
 
-      // const response = await axios.post('YOUR_API_ENDPOINT/register/send-code', {
-      //   phoneNumber: formData.phoneNumber
-      // });
+       const response = await axios.post('https://hospital.liara.run/api/register/send-code', {
+         phoneNumber: formData.phoneNumber
+       });
 
 
       setVerificationData({
@@ -70,16 +70,17 @@ export const AuthProvider = ({ children }) => {
         permissions: ["view_shifts", "edit_profile"],
       };
 
-      // const response = await axios.post('YOUR_API_ENDPOINT/register/verify', {
-      //   ...verificationData,
-      //   code
-      // });
+       const response = await axios.post('https://hospital.liara.run/api/register/verify', {
+         ...verificationData,
+         code
+       });
+
       // const newUser = response.data;
 
-      setUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
-      setVerificationData(null);
-      navigate('/dashboard');
+     // setUser(newUser);
+     // localStorage.setItem('user', JSON.stringify(newUser));
+     // setVerificationData(null);
+     // navigate('/dashboard');
 
       return true;
 
@@ -106,10 +107,10 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // const response = await axios.post('YOUR_API_ENDPOINT/login', credentials);
-      // setUser(response.data);
-      // localStorage.setItem('user', JSON.stringify(response.data));
-      // navigate('/dashboard');
+       const response = await axios.post('https://hospital.liara.run/api/login', credentials);
+       setUser(response.data);
+       localStorage.setItem('user', JSON.stringify(response.data));
+       navigate('/dashboard');
 
       throw new Error('نام کاربری یا رمز عبور اشتباه است');
 

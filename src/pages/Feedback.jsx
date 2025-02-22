@@ -137,7 +137,7 @@ const Feedback = () => {
     };
 
     try {
-      const response = await axios.post('https://relaxed-hawking-71-rbhqh.liara.run/api/feedbacks/', feedbackData, {
+      const response = await axios.post('https://hospital.liara.run/api/feedbacks/', feedbackData, {
         headers: {
           'Content-Type': 'application/json'
         }
