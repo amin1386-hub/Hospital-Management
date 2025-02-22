@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-       const response = await axios.post('https://hospital.liara.run/api/login', credentials);
+       const response = await axios.get('https://hospital.liara.run/api/login', credentials);
        setUser(response.data);
        localStorage.setItem('user', JSON.stringify(response.data));
        navigate('/dashboard');
